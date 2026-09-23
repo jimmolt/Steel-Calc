@@ -946,6 +946,9 @@ async function loadAndSaveSheetUrl() {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
+// Render home immediately so icons show up right away,
+// then fetch prices from Google Sheet in the background
+renderHome();
 loadPrices().then(() => renderHome());
 </script>
 </body>
