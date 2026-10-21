@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>SteelCalc</title>
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="SteelCalc">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
   :root {
@@ -294,9 +290,10 @@
     <div class="top-bar-title">Price Settings</div>
   </div>
   <div class="settings-body">
-    <div class="settings-intro"><p>Set your price per lb or per foot for each member type. Leave blank to omit pricing. Prices are saved on this device.</p></div>
+    <div class="settings-intro"><p>Prices auto-load per size from your <strong>State Steel</strong> quote (10/21/2026). Set an override here to force a flat rate for any member type — leave blank to keep using State Steel pricing.</p></div>
     <div id="price-rows"></div>
     <button class="settings-save-btn" onclick="saveSettings()">&#10003; &nbsp;SAVE PRICES</button>
+    <button id="reset-btn" class="settings-save-btn" onclick="resetToDefaults()" style="background:var(--steel);color:var(--text-dim);margin-top:8px;font-size:14px;letter-spacing:1px;">Reset to State Steel Defaults</button>
     <div class="save-confirm" id="save-confirm">&#10003; Prices saved</div>
   </div>
 </div>
@@ -517,15 +514,152 @@ const MEMBERS = [
       {l:'3" plate', t:3.000},{l:'4" plate', t:4.000}
     ]}
 ];
-/*PRICE_DATA_START*/
-const PRICES = {"asOf":"10/19/26","markup":{"angle":100,"angle_unequal":100,"flatbar":100,"round":100,"channel":100,"sheet":100,"sqtube":100},"cost":{"angle":{"1\" \u00d7 1\" \u00d7 1/8\"":1.5215,"1\" \u00d7 1\" \u00d7 3/16\"":1.4835,"1-1/4\" \u00d7 1-1/4\" \u00d7 1/8\"":1.53,"1-1/4\" \u00d7 1-1/4\" \u00d7 3/16\"":1.429,"1-1/2\" \u00d7 1-1/2\" \u00d7 1/8\"":1.5135,"1-1/2\" \u00d7 1-1/2\" \u00d7 3/16\"":1.4405,"1-1/2\" \u00d7 1-1/2\" \u00d7 1/4\"":1.4765,"1-3/4\" \u00d7 1-3/4\" \u00d7 1/8\"":1.543,"1-3/4\" \u00d7 1-3/4\" \u00d7 3/16\"":1.416,"2\" \u00d7 2\" \u00d7 1/8\"":1.489},"angle_unequal":{"2\" \u00d7 1-1/2\" \u00d7 3/16\"":1.4955,"2\" \u00d7 1-1/2\" \u00d7 1/4\"":1.4555},"flatbar":{"1/8\" \u00d7 2\"":2.0445,"1/8\" \u00d7 4\"":2.0455,"3/16\" \u00d7 2\"":1.5215,"3/16\" \u00d7 4\"":1.6405,"3/16\" \u00d7 6\"":1.6965,"1/4\" \u00d7 2\"":1.491,"1/4\" \u00d7 4\"":1.461,"1/4\" \u00d7 6\"":1.459,"3/8\" \u00d7 2\"":1.4655,"3/8\" \u00d7 4\"":1.4345,"3/8\" \u00d7 6\"":1.3935,"1/2\" \u00d7 2\"":1.4395,"1/2\" \u00d7 4\"":1.4035,"1/2\" \u00d7 6\"":1.3845,"5/8\" \u00d7 2\"":1.4435,"5/8\" \u00d7 4\"":1.382,"5/8\" \u00d7 6\"":1.3525,"3/4\" \u00d7 2\"":1.41,"3/4\" \u00d7 4\"":1.3825,"3/4\" \u00d7 6\"":1.2725,"1\" \u00d7 2\"":1.4,"1\" \u00d7 4\"":1.2965,"1\" \u00d7 6\"":1.2525,"1-1/4\" \u00d7 4\"":1.328,"1-1/4\" \u00d7 6\"":1.2945,"1-1/2\" \u00d7 4\"":1.2845,"1-1/2\" \u00d7 6\"":1.316,"2\" \u00d7 4\"":1.42},"round":{"3/4\"":1.503,"1\"":1.462,"1-1/4\"":1.46,"1-1/2\"":1.454,"1-3/4\"":1.4325,"2\"":1.4545},"channel":{"C3 \u00d7 4.1#":1.4155,"C3 \u00d7 5#":1.44,"C3 \u00d7 6#":1.4625,"C4 \u00d7 5.4#":1.3795,"C4 \u00d7 7.25#":1.387,"C5 \u00d7 6.7#":1.387,"C5 \u00d7 9#":1.3775,"C6 \u00d7 8.2#":1.3945,"C6 \u00d7 10.5#":1.3555,"MC6 \u00d7 12#":1.7265,"C6 \u00d7 13#":1.337,"C7 \u00d7 9.8#":1.4,"C7 \u00d7 12.25#":1.3835,"C8 \u00d7 11.5#":1.3005,"C8 \u00d7 13.75#":1.32,"MC8 \u00d7 18.7#":1.6805,"C8 \u00d7 18.75#":1.2585,"C9 \u00d7 13.4#":1.92,"C10 \u00d7 15.3#":1.3065,"C10 \u00d7 20#":1.256,"C10 \u00d7 25#":1.281,"C12 \u00d7 20.7#":1.278,"C12 \u00d7 25#":1.242,"C12 \u00d7 30#":1.1865,"C15 \u00d7 33.9#":1.3965},"sheet":{"3/16\" plate":1.761,"1/4\" plate":1.7155,"5/16\" plate":1.632,"3/8\" plate":1.5545,"1/2\" plate":1.452,"5/8\" plate":1.2325,"3/4\" plate":1.1685,"1\" plate":1.367},"sqtube":{"2\" \u00d7 2\" \u00d7 3/16\"":2.0775,"2\" \u00d7 2\" \u00d7 1/4\"":2.039,"3\" \u00d7 3\" \u00d7 3/16\"":1.9995,"3\" \u00d7 3\" \u00d7 1/4\"":1.921,"4\" \u00d7 4\" \u00d7 3/16\"":1.913,"4\" \u00d7 4\" \u00d7 1/4\"":1.8245}}};
-/*PRICE_DATA_END*/
-function markupFor(id){ const o=(prices._mk||{})[id]; const v=parseFloat(o!==undefined&&o!==''?o:(PRICES.markup||{})[id]); return isNaN(v)?0:v; }
-function priceFor(id,label){ const c=(PRICES.cost[id]||{})[label]; if(!c) return null; return {cost:c, rate:c*(1+markupFor(id)/100)}; }
 // ── PRICE STORAGE ────────────────────────────────────────────────────────────
+// Per-size default prices from State Steel quote (10/21/2026), markup column ÷ 100 = $/lb.
+// Categories not in the quote are estimated from the nearest equivalent.
+//
+// Per-member override prices (from Settings screen) are still stored in `prices` by member id.
+// At calculate time, getSizePrice() checks size-specific defaults first, then member override.
+
+const stateSteelDefaults = {
+  // ── ROUND BAR — 1018 CR, all sizes $2.233/lb ──────────────────────────────
+  round: { all: 2.233 },
+
+  // ── SQUARE BAR — not in quote, estimated ≈ round bar ─────────────────────
+  square: { all: 2.233 },
+
+  // ── FLAT BAR / STRIP — by thickness ──────────────────────────────────────
+  // 1/8" strip: $2.128 | 3/16" strip: $1.93 avg | 1/4" flat: $1.745 | 3/8": $1.752 | 1/2": $1.725
+  flatbar: {
+    '1/8':  2.128,
+    '3/16': 1.930,
+    '1/4':  1.745,
+    '3/8':  1.752,
+    '1/2':  1.725,
+    all:    1.870  // fallback for other thicknesses
+  },
+
+  // ── EQUAL ANGLE — by leg size (avg across thicknesses in quote) ──────────
+  // 1×1: $1.843 | 1.5×1.5: $1.750 | 2×2: $1.728 | 3×3: $1.726 | 4×4: $1.807
+  angle: {
+    '1':     1.843,
+    '1-1/2': 1.750,
+    '2':     1.728,
+    '3':     1.726,
+    '4':     1.807,
+    all:     1.765  // fallback
+  },
+
+  // ── UNEQUAL ANGLE — not in quote, estimated ≈ equal angle ────────────────
+  angle_unequal: { all: 1.765 },
+
+  // ── CHANNEL / BEAM / S-BEAM — not in quote, estimated ≈ angle ─────────────
+  channel: { all: 1.765 },
+  beam:    { all: 1.765 },
+  sbeam:   { all: 1.765 },
+
+  // ── SQUARE TUBE — by outer dimension ─────────────────────────────────────
+  // 1×1: $2.718 | 1.25×1.25: $2.743 | 1.5×1.5: $2.758 | 2×2 and up: $2.658
+  sqtube: {
+    '1':     2.718,
+    '1-1/4': 2.743,
+    '1-1/2': 2.758,
+    '2':     2.658,
+    '2-1/2': 2.658,
+    '3':     2.658,
+    '4':     2.658,
+    all:     2.658
+  },
+
+  // ── RECT TUBE — not in quote, estimated ≈ sq tube ─────────────────────────
+  recttube: { all: 2.658 },
+
+  // ── ROUND TUBE — by nominal OD ────────────────────────────────────────────
+  // 1", 1-1/4", 1-1/2" (11GA): $2.976  |  pipe sizes 1–2": $2.658–2.718
+  roundtube: {
+    '1':     2.976,
+    '1-1/4': 2.976,
+    '1-1/2': 2.976,
+    all:     2.820  // fallback for other sizes
+  },
+
+  // ── SHEET / PLATE — by thickness ─────────────────────────────────────────
+  // 14ga: $2.104 | 7–12ga: $2.039 | plate 1/4–3/8: $2.131 | 1/2: $2.616 | 3/4: $2.291 | 1": $2.376
+  sheet: {
+    '7ga':   2.039,
+    '10ga':  2.039,
+    '11ga':  2.039,
+    '12ga':  2.039,
+    '14ga':  2.104,
+    '1/4':   2.131,
+    '5/16':  2.131,
+    '3/8':   2.131,
+    '1/2':   2.616,
+    '3/4':   2.291,
+    '1':     2.376,
+    all:     2.176  // fallback for gauges/sizes not in quote
+  }
+};
+
+// Extract a size-specific default price per lb from the defaults table.
+// sizeLabel = the `l` field from MEMBERS sizes array (e.g. '1/4" × 2"', '14 ga (0.075")', '2" × 2" × 3/16"')
+function getDefaultPriceForSize(memberId, sizeLabel) {
+  const defs = stateSteelDefaults[memberId];
+  if (!defs) return null;
+  if (defs.all !== undefined && Object.keys(defs).length === 1) return defs.all;
+
+  const s = sizeLabel;
+
+  if (memberId === 'flatbar') {
+    // Label like '1/4" × 2"' — first token is thickness
+    const m = s.match(/^([\d\-\/]+)"/);
+    if (m && defs[m[1]] !== undefined) return defs[m[1]];
+  }
+
+  if (memberId === 'angle') {
+    // Label like '2" × 2" × 3/8"' — first token is leg
+    const m = s.match(/^([\d\-\/]+)"/);
+    if (m && defs[m[1]] !== undefined) return defs[m[1]];
+  }
+
+  if (memberId === 'sqtube') {
+    // Label like '2" × 2" × 3/16"' — first token is OD
+    const m = s.match(/^([\d\-\/]+)"/);
+    if (m && defs[m[1]] !== undefined) return defs[m[1]];
+  }
+
+  if (memberId === 'roundtube') {
+    // Label like '1-1/4" OD × .083"' — first token before " OD
+    const m = s.match(/^([\d\-\/]+)"\s+OD/);
+    if (m && defs[m[1]] !== undefined) return defs[m[1]];
+  }
+
+  if (memberId === 'sheet') {
+    // Gauge label like '14 ga (0.075")' or plate '1/4" plate'
+    const ga = s.match(/(\d+)\s*ga/i);
+    if (ga && defs[ga[1]+'ga'] !== undefined) return defs[ga[1]+'ga'];
+    const pl = s.match(/^([\d\/]+)"\s+plate/);
+    if (pl && defs[pl[1]] !== undefined) return defs[pl[1]];
+  }
+
+  return defs.all !== undefined ? defs.all : null;
+}
+
 let prices = {};
 
+// Returns {mode, value} — checks manual override first, then per-size default
 function getPrice(id) { return prices[id] || { mode:'lb', value:'' }; }
+
+// Get the effective $/lb for a specific size — used at calculate time
+function getSizePrice(memberId, sizeLabel) {
+  // Manual per-member override takes priority
+  const override = prices[memberId];
+  if (override && parseFloat(override.value) > 0) return { mode: override.mode, value: override.value };
+  // Size-specific default
+  const defVal = getDefaultPriceForSize(memberId, sizeLabel);
+  if (defVal !== null) return { mode: 'lb', value: String(defVal) };
+  return { mode: 'lb', value: '' };
+}
 
 function loadPrices() {
   try {
@@ -543,6 +677,16 @@ function savePrices() {
   try {
     history.replaceState(null, '', '#' + encodeURIComponent(JSON.stringify(prices)));
   } catch(e) {}
+}
+
+function resetToDefaults() {
+  if (!confirm('Reset all prices to State Steel defaults?')) return;
+  prices = {};
+  try { localStorage.removeItem('steelcalc_prices'); } catch(e) {}
+  try { history.replaceState(null, '', window.location.pathname); } catch(e) {}
+  renderSettings();
+  const btn = document.getElementById('reset-btn');
+  if (btn) { btn.textContent = '✓ Reset'; setTimeout(()=>{ btn.textContent = 'Reset to State Steel Defaults'; }, 1500); }
 }
 
 // ── QUOTE STATE ───────────────────────────────────────────────────────────────
@@ -650,14 +794,10 @@ function calculate() {
   document.getElementById('result-card').classList.add('visible');
 
   let totalCost=0, rateStr='', hasCost=false;
-  const p=getPrice(current.id);
+  const p=getSizePrice(current.id, size.l);
   const pVal=parseFloat(p.value);
-  const px=(p.mode==='ft')?null:priceFor(current.id,size.l);
-  if(px||(!isNaN(pVal)&&pVal>0)) {
-    if(px){
-      totalCost=px.rate*totalLbs;
-      rateStr=`${totalLbs.toFixed(2)} lb × $${px.rate.toFixed(3)}/lb`;
-    } else if(p.mode==='ft'&&current.type==='length'){
+  if(!isNaN(pVal)&&pVal>0) {
+    if(p.mode==='ft'&&current.type==='length'){
       totalCost=pVal*lenFt*qty;
       rateStr=`${(lenFt*qty).toFixed(2)} ft × $${pVal.toFixed(2)}/ft`;
     } else {
@@ -811,26 +951,9 @@ function renderSettings() {
     });
     html += '</div>';
   });
-  const mkIds = Object.keys(PRICES.cost);
-  if (mkIds.length) {
-    html += `<div><div class="settings-group-title">Prices updated ${PRICES.asOf}</div><div style="padding:6px 16px"><button type="button" id="mk-toggle" onclick="toggleMk()" style="background:var(--card);border:1px solid var(--border2);color:var(--text-dim);border-radius:8px;padding:8px 12px;font-size:12px;font-family:'DM Sans',sans-serif;">Show markup %</button></div><div id="mk-wrap" style="display:none"><div class="settings-group-title">Markup %</div>`;
-    mkIds.forEach(id => {
-      const m = MEMBERS.find(x => x.id === id);
-      const cur = (prices._mk||{})[id];
-      html += `<div class="price-row"><div class="price-row-icon">${m.icon}</div><div class="price-row-info"><div class="price-row-name">${m.label}</div><div class="price-row-type"><span style="font-size:11px;">${Object.keys(PRICES.cost[id]).length} sizes · default ${(PRICES.markup||{})[id]??0}%</span></div></div><div class="price-row-input"><input type="number" class="mk-val" data-id="${id}" placeholder="${(PRICES.markup||{})[id]??0}" value="${cur??''}" step="1" inputmode="decimal"><span>%</span></div></div>`;
-    });
-    html += '</div></div>';
-  }
   container.innerHTML = html;
   const sc = document.getElementById('save-confirm');
   sc.style.display = 'none';
-}
-
-function toggleMk() {
-  const w = document.getElementById('mk-wrap'), b = document.getElementById('mk-toggle');
-  const show = w.style.display === 'none';
-  w.style.display = show ? 'block' : 'none';
-  b.textContent = show ? 'Hide markup %' : 'Show markup %';
 }
 
 function saveSettings() {
@@ -841,8 +964,6 @@ function saveSettings() {
     const mode = modeSel ? modeSel.value : 'lb';
     prices[id] = { mode, value: val };
   });
-  prices._mk = {};
-  document.querySelectorAll('.mk-val').forEach(i => { if (i.value.trim() !== '') prices._mk[i.dataset.id] = i.value.trim(); });
   savePrices();
   const sc = document.getElementById('save-confirm');
   sc.textContent = '✓ Prices saved';
