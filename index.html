@@ -108,8 +108,27 @@
   .action-btn:active{opacity:0.8;}
   .btn-print{background:var(--steel-light);color:#fff;}
   .btn-share{background:var(--accent2);color:var(--steel);}
+  .btn-dropbox{background:#0061FF;color:#fff;}
   .btn-clear{background:transparent;color:var(--text-dim);border:1px solid var(--border2);font-size:14px;font-family:'DM Sans',sans-serif;letter-spacing:0;padding:10px;}
   .action-note{font-size:11px;color:var(--text-dim);text-align:center;padding:0 16px 8px;}
+  /* Quote meta (customer / job) */
+  .quote-meta-section{background:var(--card);border-bottom:2px solid var(--border);padding:10px 16px;}
+  .qmeta-row{display:flex;align-items:center;gap:10px;padding:4px 0;}
+  .qmeta-label{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;min-width:60px;}
+  .qmeta-input{flex:1;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif;padding:2px 4px;outline:none;}
+  .qmeta-input::placeholder{color:var(--text-dim);opacity:0.5;}
+  .qmeta-input:focus{border-bottom-color:var(--accent2);}
+  /* Labor section */
+  .labor-section{background:var(--card);border-top:1px solid var(--border);padding:12px 16px;}
+  .labor-title{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px;}
+  .labor-inputs{display:flex;gap:8px;align-items:flex-end;}
+  .labor-field{display:flex;flex-direction:column;gap:4px;flex:1;}
+  .labor-total-field{flex:1.2;}
+  .labor-label{font-size:10px;font-weight:600;letter-spacing:0.5px;color:var(--text-dim);text-transform:uppercase;}
+  .labor-input{background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:16px;font-family:'DM Sans',sans-serif;padding:6px 8px;width:100%;box-sizing:border-box;outline:none;}
+  .labor-input:focus{border-color:var(--accent2);}
+  .labor-total{font-size:20px;font-weight:700;color:var(--accent2);padding:6px 0;}
+  .labor-print-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 16px;background:var(--card);}
 
   /* SETTINGS */
   .settings-body{flex:1;padding:0 0 40px;overflow-y:auto;}
@@ -150,7 +169,12 @@
     .qli-desc{color:#555;}
     .qli-cost{color:#333;}
     .qli-del{display:none;}
-    .quote-actions,.action-note{display:none;}
+    .quote-actions,.action-note,.labor-section{display:none;}
+    .quote-meta-section{background:#fff;border-bottom:1px solid #ccc;}
+    .qmeta-input{color:#000;border-bottom:none;}
+    .qmeta-label{color:#555;}
+    .labor-print-row{background:#fff;padding:6px 0;}
+    .labor-print-row .qt-label,.labor-print-row .qt-val{color:#000;}
     .print-header{display:block;}
   }
   .print-only{display:none;}
@@ -267,15 +291,51 @@
     <p id="print-date"></p>
   </div>
   <div class="quote-body">
+    <!-- Customer / Job info -->
+    <div class="quote-meta-section">
+      <div class="qmeta-row">
+        <label class="qmeta-label" for="q-customer">Customer</label>
+        <input class="qmeta-input" id="q-customer" type="text" placeholder="Customer name" oninput="saveQuoteMeta()" autocomplete="off">
+      </div>
+      <div class="qmeta-row">
+        <label class="qmeta-label" for="q-jobdesc">Job</label>
+        <input class="qmeta-input" id="q-jobdesc" type="text" placeholder="Job description" oninput="saveQuoteMeta()" autocomplete="off">
+      </div>
+    </div>
     <div id="quote-lines"></div>
     <div id="quote-totals-wrap" style="display:none">
+      <!-- Labor section -->
+      <div class="labor-section no-print">
+        <div class="labor-title">Labor</div>
+        <div class="labor-inputs">
+          <div class="labor-field">
+            <label class="labor-label" for="q-labor-hrs">Hours</label>
+            <input class="labor-input" id="q-labor-hrs" type="number" min="0" step="0.5" placeholder="0" oninput="updateLaborTotal()">
+          </div>
+          <div class="labor-field">
+            <label class="labor-label" for="q-labor-rate">Rate ($/hr)</label>
+            <input class="labor-input" id="q-labor-rate" type="number" min="0" step="5" placeholder="150" value="150" oninput="updateLaborTotal()">
+          </div>
+          <div class="labor-field labor-total-field">
+            <label class="labor-label">Labor Total</label>
+            <div class="labor-total" id="labor-total-display">—</div>
+          </div>
+        </div>
+      </div>
+      <!-- Labor print row (visible only in print) -->
+      <div class="labor-print-row print-only" id="labor-print-row" style="display:none">
+        <span class="qt-label">Labor (<span id="labor-print-hrs">0</span> hrs @ $<span id="labor-print-rate">150</span>/hr)</span>
+        <span class="qt-val" id="labor-print-cost">—</span>
+      </div>
       <div class="quote-totals">
-        <div class="qt-row"><span class="qt-label">Total weight</span><span class="qt-val" id="qt-weight">—</span></div>
-        <div class="qt-row" id="qt-cost-row" style="display:none"><span class="qt-grand-label">Total cost</span><span class="qt-grand-val" id="qt-cost">—</span></div>
+        <div class="qt-row"><span class="qt-label">Steel weight</span><span class="qt-val" id="qt-weight">—</span></div>
+        <div class="qt-row" id="qt-cost-row" style="display:none"><span class="qt-label">Material cost</span><span class="qt-val" id="qt-cost">—</span></div>
+        <div class="qt-row" id="qt-grand-row" style="display:none"><span class="qt-grand-label">Grand Total</span><span class="qt-grand-val" id="qt-grand">—</span></div>
       </div>
       <div class="quote-actions no-print">
         <button class="action-btn btn-print" onclick="printQuote()">&#128438; &nbsp;PRINT QUOTE</button>
         <button class="action-btn btn-share" onclick="shareQuote()">&#8679; &nbsp;SHARE / TEXT / EMAIL</button>
+        <button class="action-btn btn-dropbox" onclick="saveToDropbox()">&#128190; &nbsp;SAVE TO DROPBOX</button>
         <button class="action-btn btn-clear" onclick="clearQuote()">&#128465; Clear all items</button>
       </div>
       <div class="action-note no-print">Share opens your phone's native share sheet — send via text, email, or any app.</div>
@@ -831,9 +891,86 @@ function addToQuote() {
 }
 
 // ── QUOTE SCREEN ──────────────────────────────────────────────────────────────
+// ── QUOTE META (customer / job / labor) ──────────────────────────────────────
+function saveQuoteMeta() {
+  try {
+    const meta = {
+      customer: document.getElementById('q-customer').value,
+      jobdesc: document.getElementById('q-jobdesc').value,
+      laborRate: document.getElementById('q-labor-rate') ? document.getElementById('q-labor-rate').value : '150'
+    };
+    localStorage.setItem('steelcalc_meta', JSON.stringify(meta));
+  } catch(e) {}
+}
+
+function loadQuoteMeta() {
+  try {
+    const s = localStorage.getItem('steelcalc_meta');
+    if (s) {
+      const meta = JSON.parse(s);
+      const cEl = document.getElementById('q-customer');
+      const jEl = document.getElementById('q-jobdesc');
+      const rEl = document.getElementById('q-labor-rate');
+      if (cEl && meta.customer) cEl.value = meta.customer;
+      if (jEl && meta.jobdesc) jEl.value = meta.jobdesc;
+      if (rEl && meta.laborRate) rEl.value = meta.laborRate;
+    }
+  } catch(e) {}
+}
+
+function updateLaborTotal() {
+  saveQuoteMeta();
+  updateGrandTotal();
+}
+
+function getLaborCost() {
+  const hrs = parseFloat(document.getElementById('q-labor-hrs') ? document.getElementById('q-labor-hrs').value : '') || 0;
+  const rate = parseFloat(document.getElementById('q-labor-rate') ? document.getElementById('q-labor-rate').value : '150') || 150;
+  return { hrs, rate, total: hrs * rate };
+}
+
+function updateGrandTotal() {
+  const anyPrice = quoteItems.some(i => i.hasCost);
+  if (!anyPrice) {
+    const grandRow = document.getElementById('qt-grand-row');
+    if (grandRow) grandRow.style.display = 'none';
+    const lPrint = document.getElementById('labor-print-row');
+    if (lPrint) lPrint.style.display = 'none';
+    const lDisp = document.getElementById('labor-total-display');
+    if (lDisp) lDisp.textContent = '—';
+    return;
+  }
+  const materialCost = quoteItems.filter(i => i.hasCost).reduce((a,b) => a + b.totalCost, 0);
+  const labor = getLaborCost();
+  const lDisp = document.getElementById('labor-total-display');
+  if (lDisp) lDisp.textContent = labor.hrs > 0 ? '$' + labor.total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+  const grandRow = document.getElementById('qt-grand-row');
+  const grandEl = document.getElementById('qt-grand');
+  if (labor.hrs > 0 && grandRow && grandEl) {
+    const grand = materialCost + labor.total;
+    grandEl.textContent = '$' + grand.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    grandRow.style.display = 'flex';
+    // update print labor row
+    const lpr = document.getElementById('labor-print-row');
+    if (lpr) lpr.style.display = 'flex';
+    const lph = document.getElementById('labor-print-hrs');
+    if (lph) lph.textContent = labor.hrs;
+    const lprr = document.getElementById('labor-print-rate');
+    if (lprr) lprr.textContent = labor.rate;
+    const lpc = document.getElementById('labor-print-cost');
+    if (lpc) lpc.textContent = '$' + labor.total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  } else {
+    if (grandRow) grandRow.style.display = 'none';
+    const lpr = document.getElementById('labor-print-row');
+    if (lpr) lpr.style.display = 'none';
+  }
+}
+
 function renderQuote() {
   const linesEl=document.getElementById('quote-lines');
   const totalsWrap=document.getElementById('quote-totals-wrap');
+
+  loadQuoteMeta();
 
   if(quoteItems.length===0) {
     linesEl.innerHTML=`<div class="quote-empty"><div class="empty-icon">&#128203;</div><p>No items yet.<br>Calculate a member and tap<br><strong>Add to Quote</strong>.</p></div>`;
@@ -871,6 +1008,7 @@ function renderQuote() {
     costRow.style.display='none';
   }
   totalsWrap.style.display='block';
+  updateGrandTotal();
 }
 
 function removeQuoteItem(id) {
@@ -893,17 +1031,21 @@ function printQuote() {
   window.print();
 }
 
-// ── SHARE ─────────────────────────────────────────────────────────────────────
-function shareQuote() {
-  if(quoteItems.length===0) return;
+// ── QUOTE TEXT BUILDER ────────────────────────────────────────────────────────
+function buildQuoteText() {
+  const customer = (document.getElementById('q-customer')||{}).value||'';
+  const jobdesc = (document.getElementById('q-jobdesc')||{}).value||'';
+  const labor = getLaborCost();
   let text='STEEL MATERIAL QUOTE\n';
   text+='Generated: '+new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})+'\n';
+  if(customer) text+='Customer: '+customer+'\n';
+  if(jobdesc) text+='Job: '+jobdesc+'\n';
   text+='─'.repeat(32)+'\n';
   quoteItems.forEach((item,i)=>{
     text+=`\n${i+1}. ${item.member}\n`;
     text+=`   ${item.desc}\n`;
     text+=`   Weight: ${item.totalLbs>=1000?item.totalLbs.toFixed(0):item.totalLbs.toFixed(2)} lb`;
-    if(item.hasCost) text+=`   Cost: $${item.totalCost.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    if(item.hasCost) text+=`\n   Cost: $${item.totalCost.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
     text+='\n';
   });
   text+='\n'+'─'.repeat(32)+'\n';
@@ -911,13 +1053,61 @@ function shareQuote() {
   let totalCost=quoteItems.filter(i=>i.hasCost).reduce((a,b)=>a+b.totalCost,0);
   let anyPrice=quoteItems.some(i=>i.hasCost);
   text+=`Total Weight: ${totalWeight>=1000?totalWeight.toFixed(0):totalWeight.toFixed(2)} lb\n`;
-  if(anyPrice) text+=`Total Cost: $${totalCost.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}\n`;
+  if(anyPrice) {
+    text+=`Material Cost: $${totalCost.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}\n`;
+    if(labor.hrs>0) {
+      text+=`Labor: ${labor.hrs} hrs @ $${labor.rate}/hr = $${labor.total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}\n`;
+      text+=`GRAND TOTAL: $${(totalCost+labor.total).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}\n`;
+    }
+  }
+  return text;
+}
 
+// ── SHARE ─────────────────────────────────────────────────────────────────────
+function shareQuote() {
+  if(quoteItems.length===0) return;
+  const text = buildQuoteText();
   if(navigator.share) {
     navigator.share({title:'Steel Quote',text}).catch(()=>{});
   } else {
     navigator.clipboard.writeText(text).then(()=>alert('Quote copied to clipboard!')).catch(()=>alert('Share not supported on this browser. Try printing instead.'));
   }
+}
+
+// ── SAVE TO DROPBOX ───────────────────────────────────────────────────────────
+function saveToDropbox() {
+  if(quoteItems.length===0) return;
+  const text = buildQuoteText();
+  const customer = (document.getElementById('q-customer')||{}).value||'';
+  const jobdesc = (document.getElementById('q-jobdesc')||{}).value||'';
+  const dateStr = new Date().toISOString().slice(0,10);
+  let fname = 'Steel_Quote';
+  if(customer) fname += '_' + customer.replace(/[^a-zA-Z0-9]/g,'_');
+  if(jobdesc) fname += '_' + jobdesc.replace(/[^a-zA-Z0-9]/g,'_').slice(0,30);
+  fname += '_' + dateStr + '.txt';
+
+  const blob = new Blob([text], {type:'text/plain'});
+  const file = new File([blob], fname, {type:'text/plain'});
+
+  // Try Web Share API Level 2 (files) — works on iOS/Android for native share sheet
+  if(navigator.canShare && navigator.canShare({files:[file]})) {
+    navigator.share({title:'Steel Quote', files:[file]}).catch(e=>{
+      if(e.name!=='AbortError') fallbackDownload(blob, fname);
+    });
+  } else {
+    // Fallback: trigger download so user can manually save to Dropbox
+    fallbackDownload(blob, fname);
+  }
+}
+
+function fallbackDownload(blob, fname) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fname;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
 }
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
